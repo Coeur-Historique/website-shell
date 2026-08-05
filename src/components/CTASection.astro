@@ -1,0 +1,197 @@
+---
+// website-shell/src/components/CTASection.astro
+// Extrait le 05/08/2026 de myselion4nonprofit/src/components/cta.astro (migration
+// multi-repos) -- ne lit plus SITE_CONFIG/CONTACT_DATA/SOCIAL_LINKS globaux, recoit
+// siteConfig/translations/lang en props. Le lien de don (PayPal) vient desormais de
+// siteConfig.contactData.donationUrl plutot que d'etre code en dur (deja identifie
+// comme fuite de source unique dans l'audit Ad Grants du 05/08/2026).
+import { Icon } from 'astro-icon/components';
+import { createTranslator, getLocaleFromPathname, localizePath, type Locale, type TranslationDictionary } from '../i18n/engine';
+import ContactForm from './contact/ContactForm.astro';
+import type { SiteConfig } from '../types';
+
+interface Props {
+  siteConfig: SiteConfig;
+  translations: TranslationDictionary;
+  lang?: Locale;
+  title?: string;
+  subtitle?: string;
+  objet?: string;
+}
+
+const { siteConfig, translations } = Astro.props;
+const t = createTranslator(translations);
+const lang = Astro.props.lang ?? getLocaleFromPathname(Astro.url.pathname);
+const { objet } = Astro.props;
+const {
+  title = objet ? t('cta.contactform.contextual.title', lang) : t('cta.default.title', lang),
+  subtitle = t('cta.default.subtitle', lang),
+} = Astro.props;
+
+const { contactData, socialLinks } = siteConfig;
+---
+
+<section class="mb-4 mt-4">
+  <h2 class="h4 fw-bold text-brand-dark mb-2">{title}</h2>
+  <p class="text-secondary small mb-3">{subtitle}</p>
+</section>
+
+{objet && (
+  <div class="row justify-content-center mb-4">
+    <div class="col-lg-8">
+      <ContactForm siteConfig={siteConfig} translations={translations} lang={lang} mode="contextual" contextObjet={objet} idSuffix="cta" />
+    </div>
+  </div>
+)}
+
+<div class="row g-3 mt-2 mb-2">
+  <div class="col-md-3">
+    <div class="card h-100 text-center p-4 border rounded-4 bg-white shadow-sm cta-card-hover">
+      <div class="cta-icon-box cta-icon-tint mx-auto mb-3 rounded-circle d-flex align-items-center justify-content-center">
+        <Icon name="fa6-solid:phone" class="fs-5" />
+      </div>
+      <h3 class="h6 fw-bold mb-2">{t('cta.card.call.title', lang)}</h3>
+      <p class="text-muted small mb-3">{t('cta.card.call.desc', lang)}</p>
+      <a href={contactData.phoneUrl} data-cta-id="cta-shared-phone" class="btn btn-sm btn-brand-outline rounded-pill px-3 mt-auto">{contactData.phone}</a>
+    </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="card h-100 text-center p-4 border rounded-4 bg-white shadow-sm cta-card-hover">
+      <div class="cta-icon-box cta-icon-tint mx-auto mb-3 rounded-circle d-flex align-items-center justify-content-center">
+        <Icon name="fa6-solid:headset" class="fs-5" />
+      </div>
+      <h3 class="h6 fw-bold mb-2">{t('cta.card.callback.title', lang)}</h3>
+      <p class="text-muted small mb-3">{t('cta.card.callback.desc', lang)}</p>
+      <a href={contactData.ringMeUrl} target="_blank" rel="noopener noreferrer" data-cta-id="cta-shared-ringcentral" class="btn btn-sm btn-brand-solid rounded-pill px-3 mt-auto">{t('cta.card.callback.button', lang)}</a>
+    </div>
+  </div>
+
+  {socialLinks.googleAgenda?.url && (
+    <div class="col-md-3">
+      <div class="card h-100 text-center p-4 border rounded-4 bg-white shadow-sm cta-card-hover">
+        <div class="cta-icon-box cta-icon-tint mx-auto mb-3 rounded-circle d-flex align-items-center justify-content-center">
+          <Icon name="fa6-solid:calendar-days" class="fs-5" />
+        </div>
+        <h3 class="h6 fw-bold mb-2">{t('cta.card.appointment.title', lang)}</h3>
+        <p class="text-muted small mb-3">{t('cta.card.appointment.desc', lang)}</p>
+        <a href={socialLinks.googleAgenda.url} target="_blank" rel="noopener noreferrer" data-cta-id="cta-shared-google-agenda" class="btn btn-sm btn-brand-solid rounded-pill px-3 mt-auto">{t('cta.card.appointment.button', lang)}</a>
+      </div>
+    </div>
+  )}
+
+  <div class="col-md-3">
+    <div class="card h-100 text-center p-4 border rounded-4 bg-white shadow-sm cta-card-hover">
+      <div class="cta-icon-box cta-icon-tint mx-auto mb-3 rounded-circle d-flex align-items-center justify-content-center">
+        <Icon name="fa6-solid:envelope-open-text" class="fs-5" />
+      </div>
+      <h3 class="h6 fw-bold mb-2">{t('cta.card.contactform.title', lang)}</h3>
+      <p class="text-muted small mb-3">{t('cta.card.contactform.desc', lang)}</p>
+      <a href={`${localizePath('/contact', lang)}#contact-form`} data-cta-id="cta-shared-contact-form" class="btn btn-sm btn-brand-outline rounded-pill px-3 mt-auto">{t('cta.card.contactform.button', lang)}</a>
+    </div>
+  </div>
+
+  {siteConfig.features.showDonation && contactData.donationUrl && (
+  <div class="col-12 mt-3">
+    <div class="card p-4 border-0 rounded-4 text-white shadow-sm cta-donation-gradient position-relative overflow-hidden">
+      <div class="row align-items-center g-3 position-relative style-z-index">
+        <div class="col-lg-8 text-center text-lg-start">
+          <div class="d-inline-flex align-items-center gap-2 mb-2 bg-white bg-opacity-15 px-3 py-1 rounded-pill small fw-bold">
+            <Icon name="fa6-solid:heart" class="text-white text-pulse" style="width: 12px; height: 12px;" />
+            <span>{t('cta.donation.badge', lang)}</span>
+          </div>
+          <h3 class="h5 fw-bold mb-2">{t('cta.donation.title', lang)}</h3>
+          <p class="mb-0 text-white-50 small lh-base">
+            {t('cta.donation.desc', lang)}
+          </p>
+        </div>
+        <div class="col-lg-4 text-center text-lg-end">
+          <a
+            href={contactData.donationUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            data-cta-id="cta-shared-paypal"
+            class="btn btn-light text-brand-burgundy fw-bold rounded-pill px-4 py-2 shadow-sm d-inline-flex align-items-center gap-2 donation-btn-hover"
+          >
+            <Icon name="fa6-brands:paypal" class="fs-6" /> {t('cta.donation.button', lang)}
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+  )}
+</div>
+
+<style is:global>
+  .cta-icon-box {
+    width: 46px;
+    height: 46px;
+    flex-shrink: 0;
+  }
+  .cta-card-hover {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  .cta-card-hover:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.06) !important;
+  }
+
+  .cta-icon-tint {
+    background-color: rgba(var(--brand-red-rgb), 0.12);
+    color: var(--brand-red);
+  }
+  .btn-brand-outline {
+    color: var(--brand-red);
+    border: 1px solid var(--brand-red);
+    background-color: transparent;
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+  .btn-brand-outline:hover {
+    background-color: var(--brand-red);
+    color: #fff;
+  }
+  .btn-brand-solid {
+    color: #fff;
+    background-color: var(--brand-red);
+    border: 1px solid var(--brand-red);
+    transition: filter 0.2s ease;
+  }
+  .btn-brand-solid:hover {
+    filter: brightness(0.92);
+    color: #fff;
+  }
+
+  .cta-donation-gradient {
+    background: linear-gradient(135deg, #dc3545 0%, #b02a37 100%);
+  }
+
+  .bg-white.bg-opacity-15 {
+    background-color: rgba(255, 255, 255, 0.15) !important;
+  }
+
+  .text-white-50 {
+    color: rgba(255, 255, 255, 0.85) !important;
+  }
+
+  .style-z-index {
+    z-index: 2;
+  }
+
+  .donation-btn-hover {
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  }
+  .donation-btn-hover:hover {
+    transform: scale(1.02);
+    background-color: #f8f9fa !important;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15) !important;
+  }
+
+  .text-pulse {
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+    100% { transform: scale(1); }
+  }
+</style>

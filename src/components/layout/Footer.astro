@@ -1,0 +1,63 @@
+---
+// website-shell/src/components/layout/Footer.astro
+// Extrait le 05/08/2026 de myselion4nonprofit (migration multi-repos) -- ne lit plus
+// SITE_CONFIG global, recoit siteConfig/translations/lang/currentPathname en props.
+import { Icon } from 'astro-icon/components';
+import FatFooter from './FatFooter.astro';
+import { createTranslator, localizePath, type Locale, type TranslationDictionary } from '../../i18n/engine';
+import type { SiteConfig } from '../../types';
+
+interface Props {
+  siteConfig: SiteConfig;
+  translations: TranslationDictionary;
+  lang: Locale;
+  currentPathname: string;
+  siteOrigin?: string;
+}
+
+const { siteConfig, translations, lang, currentPathname, siteOrigin } = Astro.props;
+const t = createTranslator(translations);
+
+const productionUrl = `${siteOrigin ?? siteConfig.domain ?? ''}${currentPathname}`;
+const pageSpeedUrl = `https://pagespeed.web.dev/analysis?url=${encodeURIComponent(productionUrl)}`;
+---
+
+<footer class="bg-brand-dark text-white pt-5 pb-3 border-top border-secondary">
+  <div class="container text-center text-md-start">
+
+    <FatFooter siteConfig={siteConfig} translations={translations} lang={lang} />
+
+    <hr class="mb-4 border-light opacity-25">
+
+    <section class="d-flex flex-column flex-md-row justify-content-between align-items-center small text-white-50" aria-label="Informations légales et techniques">
+      <div class="mb-3 mb-md-0">
+        © {new Date().getFullYear()} {siteConfig.title}. Tous droits réservés.{siteConfig.slogan ? ` ${siteConfig.slogan}.` : ''}
+      </div>
+      <nav class="d-flex gap-3 align-items-center flex-wrap justify-content-center" aria-label="Liens légaux et indexation">
+        <a href={pageSpeedUrl} target="_blank" rel="noopener noreferrer" data-cta-id="cta-footer-pagespeed" class="text-white-50 text-decoration-none hover-text-white">{t('footer.link.core_web_vitals', lang)}</a>
+        <a href="/sitemap-index.xml" data-cta-id="cta-footer-sitemap" class="text-white-50 text-decoration-none hover-text-white">{t('footer.link.plan_du_site', lang)}</a>
+        <a href={localizePath('/legal/cookies', lang)} class="text-white-50 text-decoration-none hover-text-white">{t('footer.link.cookies', lang)}</a>
+        <a href={localizePath('/legal/vie-privee', lang)} class="text-white-50 text-decoration-none hover-text-white">{t('footer.link.vie_privee', lang)}</a>
+        <a href={localizePath('/legal/mentions-legales', lang)} class="text-white-50 text-decoration-none hover-text-white">{t('footer.link.mentions_legales', lang)}</a>
+        <a href={localizePath('/legal/conditions-generales', lang)} class="text-white-50 text-decoration-none hover-text-white">{t('footer.link.conditions_generales', lang)}</a>
+        <a href="#" class="text-white fw-bold text-decoration-none ms-3 hover-text-red" id="backToTop" data-cta-id="cta-footer-back-to-top" aria-label={t('footer.top.label', lang)}>
+          {t('footer.top.text', lang)} <Icon name="fa6-solid:arrow-up" class="ms-1" aria-hidden="true" />
+        </a>
+      </nav>
+    </section>
+
+  </div>
+</footer>
+
+<style>
+  html {
+    scroll-behavior: smooth;
+  }
+  .hover-text-white:hover {
+    color: #ffffff !important;
+    text-decoration: underline !important;
+  }
+  .hover-text-red:hover {
+    color: #d9375e !important;
+  }
+</style>

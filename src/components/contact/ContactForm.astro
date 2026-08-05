@@ -1,0 +1,146 @@
+---
+// website-shell/src/components/contact/ContactForm.astro
+// Extrait le 05/08/2026 de myselion4nonprofit (migration multi-repos) -- ne lit plus
+// SITE_CONFIG global, recoit siteConfig/translations/lang en props. WEB3FORMS_ACCESS_KEY
+// reste dans le contenant (valeur partagee par tous les sites, voir web3forms.ts).
+import { createTranslator, type Locale, type TranslationDictionary } from '../../i18n/engine';
+import { WEB3FORMS_ACCESS_KEY } from '../../web3forms';
+import type { SiteConfig } from '../../types';
+
+interface Props {
+  siteConfig: SiteConfig;
+  translations: TranslationDictionary;
+  lang: Locale;
+  mode: 'generic' | 'contextual';
+  contextObjet?: string;
+  idSuffix?: string;
+}
+
+const { siteConfig, translations, lang, mode, contextObjet, idSuffix } = Astro.props;
+const t = createTranslator(translations);
+
+const web3formsUrl = `https://api.web3forms.com/submit`;
+const suffix = idSuffix ? `-${idSuffix}` : '';
+
+const formElId = `contact-form-el${suffix}`;
+const feedbackId = `contact-form-feedback${suffix}`;
+const submitBtnId = `contact-form-submit${suffix}`;
+const nameId = `cf-name${suffix}`;
+const emailId = `cf-email${suffix}`;
+const phoneId = `cf-phone${suffix}`;
+const subjectId = `cf-subject${suffix}`;
+const messageId = `cf-message${suffix}`;
+
+const genericOptions = mode === 'generic'
+  ? [...siteConfig.cible, ...siteConfig.service]
+  : [];
+const useGenericFallback = genericOptions.length < 3;
+---
+
+<form id={formElId} action={web3formsUrl} method="POST" class="d-flex flex-column gap-3" novalidate>
+  <input type="hidden" name="access_key" value={WEB3FORMS_ACCESS_KEY}>
+  <input type="hidden" name="subject" value={`Nouveau message - Formulaire de Contact - ${siteConfig.title}`}>
+  <input type="hidden" name="from_name" value={siteConfig.title}>
+  {/* Honeypot Web3Forms : checkbox invisible pour un humain, rempli par la plupart des bots -> soumission ignorée côté serveur. */}
+  <input type="checkbox" name="botcheck" style="display:none" tabindex="-1" autocomplete="off" aria-hidden="true" />
+
+  <div>
+    <label for={nameId} class="form-label small fw-bold text-secondary">{t('contact.form.name.label', lang)}</label>
+    <input type="text" name="Nom et prénom" id={nameId} class="form-control" required />
+  </div>
+
+  <div>
+    <label for={emailId} class="form-label small fw-bold text-secondary">{t('contact.form.email.label', lang)}</label>
+    <input type="email" name="email" id={emailId} class="form-control" required />
+  </div>
+
+  <div>
+    <label for={phoneId} class="form-label small fw-bold text-secondary">{t('contact.form.phone.label', lang)}</label>
+    <input type="tel" name="Téléphone" id={phoneId} class="form-control" />
+  </div>
+
+  <div>
+    {mode === 'generic' ? (
+      <>
+        <label for={subjectId} class="form-label small fw-bold text-secondary">{t('contact.form.subject.label', lang)}</label>
+        {useGenericFallback ? (
+          <select name="Objet" id={subjectId} class="form-select" required>
+            <option value={t('contact.form.subject.generic.fallback', lang)} selected>{t('contact.form.subject.generic.fallback', lang)}</option>
+          </select>
+        ) : (
+          <select name="Objet" id={subjectId} class="form-select" required>
+            <option value="" disabled selected>{t('contact.form.subject.placeholder', lang)}</option>
+            {genericOptions.map((option) => (
+              <option value={option.name}>{option.name}</option>
+            ))}
+          </select>
+        )}
+      </>
+    ) : (
+      <>
+        <label for={subjectId} class="form-label small fw-bold text-secondary">{t('contact.form.subject.contextual.label', lang)}</label>
+        <p id={subjectId} class="form-control-plaintext fw-bold text-brand-dark mb-0">{contextObjet}</p>
+        <input type="hidden" name="Objet" value={contextObjet} />
+      </>
+    )}
+  </div>
+
+  <div>
+    <label for={messageId} class="form-label small fw-bold text-secondary">{t('contact.form.message.label', lang)}</label>
+    <textarea name="Message" id={messageId} rows="5" class="form-control" placeholder={t('contact.form.message.placeholder', lang)} required></textarea>
+  </div>
+
+  <div id={feedbackId} class="alert d-none mb-0" role="alert"></div>
+
+  <div>
+    <button type="submit" id={submitBtnId} data-cta-id="cta-contact-form-submit" class="btn btn-danger px-4 fw-bold">
+      {t('contact.form.submit.button', lang)}
+    </button>
+  </div>
+</form>
+
+<script define:vars={{
+  formElId,
+  feedbackId,
+  submitBtnId,
+  sendingText: t('contact.form.submit.sending', lang),
+  submitText: t('contact.form.submit.button', lang),
+  successText: t('contact.form.success', lang),
+  errorText: t('contact.form.error', lang),
+}}>
+  const form = document.getElementById(formElId);
+  const feedback = document.getElementById(feedbackId);
+  const submitBtn = document.getElementById(submitBtnId);
+
+  if (form) {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      submitBtn.disabled = true;
+      submitBtn.textContent = sendingText;
+      feedback.classList.add('d-none');
+
+      try {
+        const response = await fetch(form.action, {
+          method: 'POST',
+          headers: { 'Accept': 'application/json' },
+          body: new FormData(form),
+        });
+        const json = await response.json();
+
+        if (!response.ok || !json.success) throw new Error(json.message || 'Network error');
+
+        feedback.textContent = successText;
+        feedback.classList.remove('d-none', 'alert-danger');
+        feedback.classList.add('alert-success');
+        form.reset();
+      } catch (err) {
+        feedback.textContent = errorText;
+        feedback.classList.remove('d-none', 'alert-success');
+        feedback.classList.add('alert-danger');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = submitText;
+      }
+    });
+  }
+</script>

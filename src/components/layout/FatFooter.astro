@@ -1,0 +1,67 @@
+---
+// website-shell/src/components/layout/FatFooter.astro
+// Extrait le 05/08/2026 de myselion4nonprofit (migration multi-repos) -- ne lit plus
+// SITE_CONFIG global, recoit siteConfig/translations/lang en props.
+import { createTranslator, localizePath, type Locale, type TranslationDictionary } from '../../i18n/engine';
+import type { SiteConfig } from '../../types';
+
+interface Props {
+  siteConfig: SiteConfig;
+  translations: TranslationDictionary;
+  lang: Locale;
+}
+
+const { siteConfig, translations, lang } = Astro.props;
+const t = createTranslator(translations);
+---
+
+<section class="row align-items-start mb-4" aria-label="Navigation secondaire du pied de page">
+
+  <div class="col-lg col-md-4 col-sm-6 mb-4">
+    <h2 class="h6 text-uppercase fw-bold mb-4 text-white">{t('footer.col.asbl', lang)}</h2>
+    <nav aria-label={t('footer.aria.asbl_links', lang)} class="d-flex flex-column gap-3">
+      <a href={localizePath('/fatfooter/equipe', lang)} class="text-white text-decoration-none hover-text-red">{t('footer.link.equipe', lang)}</a>
+      <a href={localizePath('/fatfooter/vision', lang)} class="text-white text-decoration-none hover-text-red">{t('footer.link.vision', lang)}</a>
+      {siteConfig.features.showBlog && (
+        <a href={localizePath('/blog', lang)} class="text-white text-decoration-none hover-text-red">{t(siteConfig.labels.blog, lang)}</a>
+      )}
+    </nav>
+  </div>
+
+  <div class="col-lg col-md-4 col-sm-6 mb-4">
+    <h2 class="h6 text-uppercase fw-bold mb-4 text-white">{t('footer.col.ecosysteme', lang)}</h2>
+    <nav aria-label={t('footer.aria.ecosysteme_links', lang)} class="d-flex flex-column gap-3">
+      <a href={localizePath('/fatfooter/sous-traitant', lang)} class="text-white text-decoration-none hover-text-red">{t('footer.link.sous_traitant', lang)}</a>
+      <a href={localizePath('/fatfooter/partenaire', lang)} class="text-white text-decoration-none hover-text-red">{t('footer.link.partenaire', lang)}</a>
+      <a href={localizePath('/fatfooter/agent', lang)} class="text-white text-decoration-none hover-text-red">{t('footer.link.agent', lang)}</a>
+    </nav>
+  </div>
+
+  <div class="col-lg col-md-4 col-sm-6 mb-4">
+    <h2 class="h6 text-uppercase fw-bold mb-4 text-white">{t('footer.col.synergies', lang)}</h2>
+    <nav aria-label={t('footer.aria.synergies_links', lang)} class="d-flex flex-column gap-3">
+      <a href={localizePath('/fatfooter/marketing', lang)} class="text-white text-decoration-none hover-text-red">{t('footer.link.marketing', lang)}</a>
+      <a href={localizePath('/fatfooter/sponsoring', lang)} class="text-white text-decoration-none hover-text-red">{t('footer.link.sponsoring', lang)}</a>
+      <a href={localizePath('/fatfooter/avis', lang)} class="text-white text-decoration-none hover-text-red">{t('footer.link.avis', lang)}</a>
+    </nav>
+  </div>
+
+  <div class="col-lg col-md-4 col-sm-6 mb-4">
+    <h2 class="h6 text-uppercase fw-bold mb-4 text-white">{t('footer.col.soutien', lang)}</h2>
+    <nav aria-label={t('footer.aria.soutien_links', lang)} class="d-flex flex-column gap-3">
+      <a href={localizePath('/fatfooter/don', lang)} class="text-white text-decoration-none hover-text-red">{t('footer.link.don', lang)}</a>
+      <a href={localizePath('/fatfooter/legs', lang)} class="text-white text-decoration-none hover-text-red">{t('footer.link.legs', lang)}</a>
+      <a href={localizePath('/fatfooter/mecenat', lang)} class="text-white text-decoration-none hover-text-red">{t('footer.link.mecenat', lang)}</a>
+    </nav>
+  </div>
+
+  <div class="col-lg col-md-4 col-sm-12 mb-4">
+    <h2 class="h6 text-uppercase fw-bold mb-4 text-white">{t('footer.col.engagements', lang)}</h2>
+    <nav aria-label={t('footer.aria.engagements_links', lang)} class="d-flex flex-column gap-3">
+      <a href={localizePath('/fatfooter/volontariat', lang)} class="text-white text-decoration-none hover-text-red">{t(siteConfig.labels.volontariat, lang)}</a>
+      <a href={localizePath('/fatfooter/assurance', lang)} class="text-white text-decoration-none hover-text-red">{t('footer.link.assurance', lang)}</a>
+      <a href={localizePath('/fatfooter/agrement', lang)} class="text-white text-decoration-none hover-text-red">{t('footer.link.agrement', lang)}</a>
+    </nav>
+  </div>
+
+</section>

@@ -1,0 +1,23 @@
+{
+  "name": "@coeur-historique/website-shell",
+  "version": "0.1.0",
+  "description": "Contenant partage (Header/Footer/FatFooter/BaseLayout/ContactForm/CTA + moteur i18n) pour les sites du Groupe Selion — chaque site consomme ce package et fournit sa propre config/traductions/contenu. Voir docs/astro_multi_website_management/scoping-migration-multi-repos-2026-08-05.md (repo myselion4nonprofit).",
+  "type": "module",
+  "license": "UNLICENSED",
+  "private": true,
+  "exports": {
+    "./i18n": "./src/i18n/engine.ts",
+    "./types": "./src/types.ts",
+    "./Header.astro": "./src/components/layout/Header.astro",
+    "./Footer.astro": "./src/components/layout/Footer.astro",
+    "./FatFooter.astro": "./src/components/layout/FatFooter.astro",
+    "./BaseLayout.astro": "./src/layouts/BaseLayout.astro",
+    "./ContactForm.astro": "./src/components/contact/ContactForm.astro",
+    "./CTASection.astro": "./src/components/CTASection.astro"
+  },
+  "peerDependencies": {
+    "astro": "^6.0.0",
+    "astro-icon": "^1.1.0",
+    "bootstrap": "^5.3.2"
+  }
+}

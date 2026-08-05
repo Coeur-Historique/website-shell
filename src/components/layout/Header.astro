@@ -1,0 +1,267 @@
+---
+// website-shell/src/components/layout/Header.astro
+//
+// Extrait le 05/08/2026 de myselion4nonprofit/src/components/layout/Header.astro
+// (migration multi-repos). Differences avec l'original monorepo :
+// - Ne lit plus SITE_CONFIG/CONTACT_DATA/SOCIAL_LINKS globaux -- tout arrive en props
+//   (siteConfig, contactData, socialLinks), fournis par le site consommateur.
+// - Ne fait plus getCollection('blog') lui-meme (le contenant ne doit rien connaitre
+//   du contenu) -- le site appelant calcule blogEntryLocales et le passe en prop.
+// - showVolontariatCta remplace le test "SITE_CONFIG.companyKey === 'COEUR-HISTORIQUE'"
+//   (n'a plus de sens une fois qu'un repo ne contient qu'un seul site) -- decision
+//   explicite du site consommateur.
+// - Le selecteur de langue itere siteConfig.locales (langues REELLEMENT actives sur ce
+//   site) plutot que la liste universelle des 5 langues supportees par le groupe --
+//   corrige un lien mort potentiel decouvert pendant cette extraction (un site actif
+//   sur fr/en/nl/de affichait quand meme "ES" dans le menu, vers une route jamais
+//   construite pour lui).
+// - logoSrc (asset image optionnel) remplace l'import direct d'un fichier propre a
+//   coeur-historique.be -- chaque site fournit le sien (ou aucun, texte seul).
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+import { Icon } from 'astro-icon/components';
+import {
+  createTranslator,
+  localizePath,
+  getSwitcherHref,
+  stripLocaleFromPathname,
+  type Locale,
+  type TranslationDictionary,
+} from '../../i18n/engine';
+import type { SiteConfig } from '../../types';
+
+interface Props {
+  siteConfig: SiteConfig;
+  translations: TranslationDictionary;
+  lang: Locale;
+  currentPathname: string;
+  logoSrc?: ImageMetadata;
+  showVolontariatCta?: boolean;
+  /** Langues dans lesquelles l'article de blog COURANT existe reellement (calcule par
+   * le site appelant depuis sa propre collection) -- null si la page n'est pas un
+   * article de blog, auquel cas le selecteur retombe sur translatedPaths. */
+  blogEntryLocales?: Set<Locale> | null;
+  /** Chemins (sans prefixe de langue) reellement traduits sur CE site -- remplace
+   * l'ancien TRANSLATED_PATHS global, qui contenait en realite des slugs propres a
+   * coeur-historique.be code en dur dans ce qui devait etre un moteur partage. */
+  translatedPaths: readonly string[];
+}
+
+const {
+  siteConfig,
+  translations,
+  lang,
+  currentPathname,
+  logoSrc,
+  showVolontariatCta = false,
+  blogEntryLocales = null,
+  translatedPaths,
+} = Astro.props;
+
+const t = createTranslator(translations);
+const { contactData, socialLinks } = siteConfig;
+
+const LOGO_ALT_PREFIX: Record<Locale, string> = { fr: 'Logo de', en: 'Logo of', nl: 'Logo van', de: 'Logo von', es: 'Logo de' };
+const logoAlt = `${LOGO_ALT_PREFIX[lang] ?? LOGO_ALT_PREFIX.fr} ${siteConfig.title}`;
+const pathWithoutLocale = stripLocaleFromPathname(currentPathname);
+
+function resolveSwitcherHref(locale: Locale): string {
+  if (blogEntryLocales) {
+    return blogEntryLocales.has(locale) ? localizePath(pathWithoutLocale, locale) : localizePath('/blog', locale);
+  }
+  return getSwitcherHref(pathWithoutLocale, locale, translatedPaths);
+}
+
+const LOCALE_LABELS: Record<Locale, string> = { fr: 'FR', en: 'EN', nl: 'NL', de: 'DE', es: 'ES' };
+
+// Fonction de conversion incassable pour les réseaux sociaux et liens externes
+function getSocialIconName(iconClass: string) {
+  const str = iconClass.toLowerCase();
+  if (str.includes('facebook')) return 'fa6-brands:facebook-f';
+  if (str.includes('instagram')) return 'fa6-brands:instagram';
+  if (str.includes('linkedin')) return 'fa6-brands:linkedin-in';
+  if (str.includes('twitter') || str.includes('x')) return 'fa6-brands:x-twitter';
+  if (str.includes('youtube')) return 'fa6-brands:youtube';
+  if (str.includes('tiktok')) return 'fa6-brands:tiktok';
+  if (str.includes('whatsapp')) return 'fa6-brands:whatsapp';
+  if (str.includes('google')) return 'fa6-brands:google';
+  if (str.includes('ticket') || str.includes('eventbrite')) return 'fa6-solid:ticket';
+  if (str.includes('calendar') || str.includes('agenda')) return 'fa6-solid:calendar-days';
+  return 'fa6-solid:link';
+}
+---
+
+<div class="bg-light border-bottom py-2 d-none d-lg-block">
+  <div class="container-fluid px-md-4">
+    <div class="row align-items-center g-2">
+
+      <div class="col-lg-4 text-center text-lg-start">
+        <div class="d-flex justify-content-center justify-content-lg-start gap-2 flex-wrap social-icons-container">
+          {Object.entries(socialLinks).map(([key, link]) => (
+            link.url && (
+              <a href={link.url} data-cta-id={`cta-header-social-${key}`} class={`social-icon ${link.hoverClass}`} aria-label={link.label} title={link.label}>
+                <Icon name={getSocialIconName(link.icon)} />
+              </a>
+            )
+          ))}
+        </div>
+      </div>
+
+      <div class="col-lg-8">
+        <div class="ai-readable-data d-flex flex-nowrap justify-content-center justify-content-lg-end align-items-center gap-2 text-secondary">
+
+          {contactData.phone && (
+            <span class="data-item text-nowrap">
+              <Icon name="fa6-solid:phone" class="text-brand-red me-1" />
+              <a href={contactData.phoneUrl} data-cta-id="cta-header-phone" class="text-secondary text-decoration-none fw-bold text-dark-hover">{contactData.phone}</a>
+            </span>
+          )}
+
+          <span class="data-divider">|</span>
+
+          {contactData.email && (
+            <span class="data-item text-nowrap">
+              <Icon name="fa6-solid:envelope" class="text-brand-red me-1" />
+              <a href={contactData.emailUrl} data-cta-id="cta-header-email" class="text-secondary text-decoration-none fw-bold text-dark-hover">{contactData.email}</a>
+            </span>
+          )}
+
+          <span class="data-divider">|</span>
+
+          {contactData.address && (
+            <span class="data-item text-nowrap">
+              <Icon name="fa6-solid:location-dot" class="text-brand-red me-1" />
+              <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(contactData.address)}`} target="_blank" rel="noopener noreferrer" data-cta-id="cta-header-google-maps" class="text-secondary text-decoration-none fw-bold text-dark-hover">{contactData.address}</a>
+            </span>
+          )}
+
+          <span class="data-divider">|</span>
+
+          {contactData.tvaNumber && (
+            <span class="data-item text-nowrap">
+              <Icon name="fa6-solid:briefcase" class="text-brand-red me-1" />
+              <a href={contactData.kboUrl} target="_blank" rel="noopener noreferrer" data-cta-id="cta-header-kbo" class="text-secondary text-decoration-none fw-bold text-dark-hover">{contactData.tvaNumber}</a>
+            </span>
+          )}
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<header class="site-header bg-white shadow-sm sticky-top">
+  <div class="container">
+    <nav class="navbar navbar-expand-lg navbar-light py-3">
+      <a class="navbar-brand d-flex align-items-center" href={localizePath('/', lang)}>
+        {logoSrc ? (
+          <Image src={logoSrc} alt={logoAlt} width={45} height={45} class="me-3 object-fit-contain" />
+        ) : siteConfig.logoUrl ? (
+          <img src={siteConfig.logoUrl} alt={logoAlt} width="45" height="45" class="me-3 object-fit-contain" />
+        ) : null}
+        <span class="fw-bold text-brand-dark fs-4">{siteConfig.title}</span>
+      </a>
+
+      <button class="navbar-toggler border-0 p-2" type="button" data-bs-toggle="collapse" data-bs-target="#mainMenu" aria-label={t('header.aria.toggle_menu', lang)}>
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="mainMenu">
+        <ul class="navbar-nav ms-auto mb-2 mb-lg-0 gap-2 align-items-lg-center fw-semibold">
+          <li class="nav-item">
+            <a class="nav-link active text-brand-red p-2" href={localizePath('/', lang)}>{t('header.nav.home', lang)}</a>
+          </li>
+
+          <li class="nav-item dropdown custom-hover-dropdown">
+            <a class="nav-link dropdown-toggle text-brand-dark p-2" href="#" id="beneficiairesDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              {t(siteConfig.labels.cible, lang)}
+            </a>
+            <ul class="dropdown-menu border-0 shadow-sm rounded-3 mt-0" aria-labelledby="beneficiairesDropdown">
+              {siteConfig.cible.map((b) => (
+                <li><a class="dropdown-item py-2" href={localizePath(b.slug, lang)}>{b.name}</a></li>
+              ))}
+            </ul>
+          </li>
+
+          <li class="nav-item dropdown custom-hover-dropdown">
+            <a class="nav-link dropdown-toggle text-brand-dark p-2" href="#" id="servicesDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              {t(siteConfig.labels.service, lang)}
+            </a>
+            <ul class="dropdown-menu border-0 shadow-sm rounded-3 mt-0" aria-labelledby="servicesDropdown">
+              {siteConfig.service.map((s) => (
+                <li><a class="dropdown-item py-2" href={localizePath(s.slug, lang)}>{s.name}</a></li>
+              ))}
+              <li><hr class="dropdown-divider"></li>
+              <li><a href={contactData.ringMeUrl} data-cta-id="cta-header-ringcentral" class="btn btn-brand-primary-pink rounded-pill fw-bold">{t('header.cta.contact_immediat', lang)}</a></li>
+            </ul>
+          </li>
+
+          <li class="nav-item"><a class="nav-link text-brand-dark p-2" href={localizePath(siteConfig.objectif[0]?.slug ?? '/objectif', lang)}>{t(siteConfig.labels.objectif, lang)}</a></li>
+          {siteConfig.features.showBlog && (
+            <li class="nav-item"><a class="nav-link text-brand-dark p-2" href={localizePath('/blog', lang)}>{t(siteConfig.labels.blog, lang)}</a></li>
+          )}
+          <li class="nav-item me-lg-2"><a class="nav-link text-brand-dark p-2" href={localizePath('/contact', lang)}>{t('header.nav.contact', lang)}</a></li>
+
+          {showVolontariatCta && (
+            <li class="nav-item mt-2 mt-lg-0">
+              <a class="btn btn-inscription-header text-white px-4 py-2 rounded-pill shadow-sm text-decoration-none d-inline-block" href={localizePath('/fatfooter/volontariat', lang)}>
+                {t('header.nav.inscription', lang)}
+              </a>
+            </li>
+          )}
+
+          <li class="nav-item dropdown custom-hover-dropdown ms-lg-1">
+            <a class="nav-link dropdown-toggle text-brand-dark p-2 fw-bold" href="#" id="langDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Choisir la langue / Choose language">
+              {LOCALE_LABELS[lang]}
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end border-0 shadow-sm rounded-3 mt-0" aria-labelledby="langDropdown">
+              {siteConfig.locales.map((locale) => (
+                <li>
+                  <a
+                    class={`dropdown-item py-2 ${locale === lang ? 'fw-bold text-brand-red' : ''}`}
+                    href={resolveSwitcherHref(locale as Locale)}
+                  >
+                    {LOCALE_LABELS[locale as Locale]}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </li>
+        </ul>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<style>
+  .social-icons-container { max-width: 100%; }
+  .social-icon { color: #64748b; font-size: 0.9rem; transition: all 0.2s ease; display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 6px; }
+  .social-icon:hover { color: #d9375e; background-color: rgba(217, 55, 94, 0.05); }
+  .social-icon [data-icon] { width: 1.2em; height: 1.2em; }
+  .text-success-hover:hover { color: #25d366 !important; background-color: rgba(37, 211, 102, 0.05) !important; }
+  .text-orange-hover:hover { color: #f05537 !important; background-color: rgba(240, 85, 55, 0.05) !important; }
+  .ai-readable-data { font-size: 0.78rem; letter-spacing: -0.01em; overflow-x: auto; }
+  .text-nowrap { white-space: nowrap; }
+  .flex-nowrap { flex-wrap: nowrap !important; }
+  .data-item a:hover, .text-dark-hover:hover { color: #d9375e !important; text-decoration: underline !important; }
+  .data-divider { color: rgba(0, 0, 0, 0.12); font-weight: 300; margin: 0 2px; }
+
+  .btn-inscription-header {
+    background: linear-gradient(135deg, #d9375e, #7a1a31);
+    font-weight: 600;
+    transition: all 0.3s ease;
+    border: none;
+  }
+  .btn-inscription-header:hover {
+    background: #7a1a31;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(217, 55, 94, 0.3) !important;
+  }
+
+  @media all and (min-width: 992px) { .custom-hover-dropdown:hover > .dropdown-menu { display: block; animation: fadeUp 0.25s ease forwards; } }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  .dropdown-menu { min-width: 200px; padding: 0.5rem; }
+  .dropdown-item { border-radius: 6px; padding: 0.5rem 1rem; color: #475569; transition: all 0.2s ease; }
+  .dropdown-item:hover { background-color: #f8fafc; color: #d9375e; padding-left: 1.25rem; }
+</style>
