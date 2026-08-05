@@ -13,7 +13,8 @@
     "./FatFooter.astro": "./src/components/layout/FatFooter.astro",
     "./BaseLayout.astro": "./src/layouts/BaseLayout.astro",
     "./ContactForm.astro": "./src/components/contact/ContactForm.astro",
-    "./CTASection.astro": "./src/components/CTASection.astro"
+    "./CTASection.astro": "./src/components/CTASection.astro",
+    "./web3forms": "./src/web3forms.ts"
   },
   "peerDependencies": {
     "astro": "^6.0.0",
