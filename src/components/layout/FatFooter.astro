@@ -2,6 +2,16 @@
 // website-shell/src/components/layout/FatFooter.astro
 // Extrait le 05/08/2026 de myselion4nonprofit (migration multi-repos) -- ne lit plus
 // SITE_CONFIG global, recoit siteConfig/translations/lang en props.
+//
+// Corrige le 17/08/2026 (prepa migration innovact.be) : la colonne "Soutien"
+// (Don/Legs/Mécénat) est un concept propre aux ASBL, sans equivalent pour une
+// societe commerciale -- gatee derriere siteConfig.features.showDonation (flag
+// deja existant, deja a false pour toute entite non-ASBL) plutot que de forcer
+// ces 3 liens sur tous les sites du groupe. Les autres colonnes (Ecosysteme,
+// Synergies, Engagements) restent generiques a dessein (sous-traitant/partenaire/
+// agent/marketing/sponsoring/avis/assurance/agrement ont un sens pour n'importe
+// quelle entreprise) -- reste un gap connu : les pages /fatfooter/* correspondantes
+// doivent encore etre creees par chaque nouveau site (voir website-template/README.md).
 import { createTranslator, localizePath, type Locale, type TranslationDictionary } from '../../i18n/engine';
 import type { SiteConfig } from '../../types';
 
@@ -46,14 +56,16 @@ const t = createTranslator(translations);
     </nav>
   </div>
 
-  <div class="col-lg col-md-4 col-sm-6 mb-4">
-    <h2 class="h6 text-uppercase fw-bold mb-4 text-white">{t('footer.col.soutien', lang)}</h2>
-    <nav aria-label={t('footer.aria.soutien_links', lang)} class="d-flex flex-column gap-3">
-      <a href={localizePath('/fatfooter/don', lang)} class="text-white text-decoration-none hover-text-red">{t('footer.link.don', lang)}</a>
-      <a href={localizePath('/fatfooter/legs', lang)} class="text-white text-decoration-none hover-text-red">{t('footer.link.legs', lang)}</a>
-      <a href={localizePath('/fatfooter/mecenat', lang)} class="text-white text-decoration-none hover-text-red">{t('footer.link.mecenat', lang)}</a>
-    </nav>
-  </div>
+  {siteConfig.features.showDonation && (
+    <div class="col-lg col-md-4 col-sm-6 mb-4">
+      <h2 class="h6 text-uppercase fw-bold mb-4 text-white">{t('footer.col.soutien', lang)}</h2>
+      <nav aria-label={t('footer.aria.soutien_links', lang)} class="d-flex flex-column gap-3">
+        <a href={localizePath('/fatfooter/don', lang)} class="text-white text-decoration-none hover-text-red">{t('footer.link.don', lang)}</a>
+        <a href={localizePath('/fatfooter/legs', lang)} class="text-white text-decoration-none hover-text-red">{t('footer.link.legs', lang)}</a>
+        <a href={localizePath('/fatfooter/mecenat', lang)} class="text-white text-decoration-none hover-text-red">{t('footer.link.mecenat', lang)}</a>
+      </nav>
+    </div>
+  )}
 
   <div class="col-lg col-md-4 col-sm-12 mb-4">
     <h2 class="h6 text-uppercase fw-bold mb-4 text-white">{t('footer.col.engagements', lang)}</h2>
