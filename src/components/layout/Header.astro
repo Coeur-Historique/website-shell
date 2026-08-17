@@ -237,31 +237,31 @@ function getSocialIconName(iconClass: string) {
 <style>
   .social-icons-container { max-width: 100%; }
   .social-icon { color: #64748b; font-size: 0.9rem; transition: all 0.2s ease; display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 6px; }
-  .social-icon:hover { color: #d9375e; background-color: rgba(217, 55, 94, 0.05); }
+  .social-icon:hover { color: var(--brand-red); background-color: rgba(var(--brand-red-rgb), 0.05); }
   .social-icon [data-icon] { width: 1.2em; height: 1.2em; }
   .text-success-hover:hover { color: #25d366 !important; background-color: rgba(37, 211, 102, 0.05) !important; }
   .text-orange-hover:hover { color: #f05537 !important; background-color: rgba(240, 85, 55, 0.05) !important; }
   .ai-readable-data { font-size: 0.78rem; letter-spacing: -0.01em; overflow-x: auto; }
   .text-nowrap { white-space: nowrap; }
   .flex-nowrap { flex-wrap: nowrap !important; }
-  .data-item a:hover, .text-dark-hover:hover { color: #d9375e !important; text-decoration: underline !important; }
+  .data-item a:hover, .text-dark-hover:hover { color: var(--brand-red) !important; text-decoration: underline !important; }
   .data-divider { color: rgba(0, 0, 0, 0.12); font-weight: 300; margin: 0 2px; }
 
   .btn-inscription-header {
-    background: linear-gradient(135deg, #d9375e, #7a1a31);
+    background: linear-gradient(135deg, var(--brand-red), var(--brand-burgundy));
     font-weight: 600;
     transition: all 0.3s ease;
     border: none;
   }
   .btn-inscription-header:hover {
-    background: #7a1a31;
+    background: var(--brand-burgundy);
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(217, 55, 94, 0.3) !important;
+    box-shadow: 0 4px 12px rgba(var(--brand-red-rgb), 0.3) !important;
   }
 
   @media all and (min-width: 992px) { .custom-hover-dropdown:hover > .dropdown-menu { display: block; animation: fadeUp 0.25s ease forwards; } }
   @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
   .dropdown-menu { min-width: 200px; padding: 0.5rem; }
   .dropdown-item { border-radius: 6px; padding: 0.5rem 1rem; color: #475569; transition: all 0.2s ease; }
-  .dropdown-item:hover { background-color: #f8fafc; color: #d9375e; padding-left: 1.25rem; }
+  .dropdown-item:hover { background-color: #f8fafc; color: var(--brand-red); padding-left: 1.25rem; }
 </style>
