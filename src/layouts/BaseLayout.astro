@@ -64,6 +64,22 @@ const metaPixelId = siteConfig.analytics?.metaPixelId;
 const metaPixelEnabled = !!metaPixelId;
 const pinterestTagId = siteConfig.analytics?.pinterestTagId;
 const pinterestEnabled = !!pinterestTagId;
+
+// Le favicon n'est plus systematiquement un SVG (certains sites migres n'ont
+// qu'un logo PNG/JPG source, ex. website-ame-security.be, website-socrs.be) --
+// deduire le type MIME du <link> depuis l'extension plutot que le figer en
+// "image/svg+xml" (corrige le 18/08/2026).
+const faviconHref = siteConfig.favicon || "/favicon.svg";
+const faviconMimeTypes: Record<string, string> = {
+  svg: 'image/svg+xml',
+  png: 'image/png',
+  ico: 'image/x-icon',
+  jpg: 'image/jpeg',
+  jpeg: 'image/jpeg',
+  webp: 'image/webp',
+};
+const faviconExt = faviconHref.split('.').pop()?.toLowerCase() ?? 'svg';
+const faviconMimeType = faviconMimeTypes[faviconExt] ?? 'image/svg+xml';
 ---
 
 <!doctype html>
@@ -93,7 +109,7 @@ const pinterestEnabled = !!pinterestTagId;
     {finalImageUrl && <meta name="twitter:image" content={finalImageUrl} />}
 
     <meta name="theme-color" content="#ffffff" />
-    <link rel="icon" type="image/svg+xml" href={siteConfig.favicon || "/favicon.svg"} />
+    <link rel="icon" type={faviconMimeType} href={faviconHref} />
     <link rel="sitemap" href="/sitemap-index.xml" />
 
     <style set:html={`:root { --brand-dark-blue: ${themeVars.brandDarkBlue}; --brand-dark-blue-rgb: ${themeVars.brandDarkBlueRgb}; --brand-red: ${themeVars.brandRed}; --brand-red-rgb: ${themeVars.brandRedRgb}; --brand-burgundy: ${themeVars.brandBurgundy}; }`} />
