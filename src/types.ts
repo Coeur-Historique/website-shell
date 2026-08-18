@@ -47,6 +47,17 @@ export interface SiteConfig {
   slogan?: string;
   description: string;
   legalForm: string;
+  // Denomination legale exacte pour les mentions legales -- distincte de `title`
+  // (nom commercial/marque affiche dans le header). Convention actee par Laurent le
+  // 18/08/2026 (voir sites-variables-a-completer.xlsx) : DENOMINATION en MAJUSCULES +
+  // forme abregee en minuscules avec point final (ex: "EUROTYS - GROUPE SELION srl.",
+  // "COEUR HISTORIQUE asbl."). Plusieurs marques du groupe (Eurotys/Selion/Picto-Print)
+  // sont des denominations commerciales d'UNE SEULE entite juridique -- `title` peut
+  // donc differer fortement de `legalDenomination`. Optionnel avec fallback vers
+  // `${title} ${legalForm}` (voir ENTITY_NAME dans chaque site.variables.ts) uniquement
+  // pour ne pas casser un site pas encore mis a jour -- ne JAMAIS compter sur ce
+  // fallback pour une vraie page legale, toujours renseigner ce champ explicitement.
+  legalDenomination?: string;
   themeClass: string;
   favicon: string;
   logoUrl?: string;
